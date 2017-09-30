@@ -1,4 +1,4 @@
-version: '2'
+version: '2.2'
 services:
   spark-slave1:
     image: twinsen/spark:2.1.0
@@ -10,6 +10,8 @@ services:
       - "./volume/hadoop/tmp/slave1:/tmp"
       - "./volume/ro_data:/ro_data:ro"
     hostname: hadoop-slave1
+    mem_limit: 3000000000
+    cpu_count: 2
     networks:
       spark:
         aliases: 
@@ -26,6 +28,8 @@ services:
       - "./volume/hadoop/tmp/slave2:/tmp"
       - "./volume/ro_data:/ro_data:ro"
     hostname: hadoop-slave2
+    mem_limit: 3000000000
+    cpu_count: 2
     networks:
       spark:
         aliases: 
@@ -42,6 +46,8 @@ services:
       - "./volume/hadoop/tmp/slave3:/tmp"
       - "./volume/ro_data:/ro_data:ro"
     hostname: hadoop-slave3
+    mem_limit: 3000000000
+    cpu_count: 2
     networks:
       spark:
         aliases: 
@@ -54,6 +60,8 @@ services:
       - "./volume/mysql:/var/lib/mysql"
     container_name: mysql
     hostname: mysql
+    mem_limit: 3000000000
+    cpu_count: 1
     networks:
       - spark
     environment:
@@ -67,6 +75,8 @@ services:
       - "8088:8088"
       - "8080:8080"
       - "8042:8042"
+      - "4040:4040"
+      - "7077:7077"
     volumes:
       - "./volume/hadoop/work/master:/works"
       - "./volume/hadoop/logs/master:/root/hadoop/logs/"
@@ -76,6 +86,8 @@ services:
       - "./volume/ro_data:/ro_data:ro"
     container_name: spark-master
     hostname: hadoop-master
+    mem_limit: 3000000000
+    cpu_count: 1
     links:
       - spark-slave1
       - spark-slave2
