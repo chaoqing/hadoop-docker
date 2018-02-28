@@ -6,8 +6,9 @@ USER root
 
 ENV HADOOP_HOME=/root/hadoop
 ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+ENV SQOOP_HOME=/root/sqoop
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native/:/root/protobuf/lib
-ENV PATH=$PATH:/root/protobuf/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:.
+ENV PATH=$PATH:/root/protobuf/bin:$SQOOP_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:.
 
 # 1. 安装 OpenSSH, OpenSSL, bzip2-devel
 # 2. 同时配置SSH免密钥登陆
@@ -33,7 +34,12 @@ RUN wget https://github.com/ruoyu-chen/hadoop-docker/raw/master/dist/hadoop-2.7.
     rm -rf $HADOOP_CONF_DIR/*.example && \
     wget https://github.com/ruoyu-chen/hadoop-docker/raw/master/dist/protobuf.tar.gz && \
 	tar -xzvf protobuf.tar.gz -C /root/ && \
-	rm -rf protobuf.tar.gz	
+	rm -rf protobuf.tar.gz	&& \
+
+    mkdir $SQOOP_HOME && wget -qO- https://mirrors.tuna.tsinghua.edu.cn/apache/sqoop/1.4.7/sqoop-1.4.7.bin__hadoop-2.6.0.tar.gz | \
+    tar -xzv -C $SQOOP_HOME --strip-components=1 && ln $SQOOP_HOME/sqoop-1.4.7.jar $HADOOP_HOME/share/hadoop/mapreduce/ && \
+    wget -qO- https://gist.githubusercontent.com/anonymous/8cff07bb657997b5bf93f0a5297be3ea/raw/bed24dce4d4de0dd1d335a1cea23265ce1e2cbc9/ojdbc8.jar |base64 -d > $SQOOP_HOME/lib/ojdbc8.jar
+    
 
 #拷贝环境变量配置文件
 ADD config/other/bashrc /root/.bashrc

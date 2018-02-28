@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $# -eq 0 ]; then
-	echo daemon.sh "[create|init|start|test|stop|destroy]"
+	echo daemon.sh "[create|init|start|test|stop|restart|destroy]"
 	exit
 fi
 
@@ -45,8 +45,12 @@ if [ $1 = test ]; then
 #docker-compose exec spark-master /root/spark/bin/spark-shell --master yarn --driver-memory 1g --executor-memory 1g --executor-cores 1
 
 # Run a test on another unrelated running container ds, remember to add it to spark network first
-#docker network connect hadoopdocker_spark ds
-#docker network disconnect bridge ds
+docker network inspect hadoopdocker_spark | grep -q '"Name": "ds"'
+if [ $? -ne 0 ] ; then
+docker network connect hadoopdocker_spark ds
+docker network disconnect bridge ds
+fi
+
 docker exec -e JAVA_HOME=/opt/jdk1.8 ds \
 	/opt/spark/spark-2.1.0-bin-hadoop2.7/bin/spark-submit \
 	--class org.apache.spark.examples.SparkPi \
@@ -56,7 +60,11 @@ docker exec -e JAVA_HOME=/opt/jdk1.8 ds \
 	--total-executor-cores 4 \
 	/opt/spark/spark-2.1.0-bin-hadoop2.7/examples/jars/spark-examples_2.11-2.1.0.jar \
 	5
+
+#sqoop import-all-tables --connect jdbc:oracle:thin:@//HOST:PORT/SERVICE --username $USERNAME --password $PASSWD -m 1 --target-dir /user/spark --as-parquetfile
+#sqoop import --connect jdbc:oracle:thin:@//HOST:PORT/SERVICE --username $USERNAME --password $PASSWD -m 1 --table TABLE_NAME --target-dir /user/spark --as-parquetfile
 fi
+
 
 # =========================== Stop =========================== 
 if [ $1 = stop ]; then
@@ -67,6 +75,12 @@ docker-compose exec spark-master stop-yarn.sh
 #[停止HDFS]
 docker-compose exec spark-master stop-dfs.sh
 docker-compose stop
+fi
+
+if [ $1 = restart ]; then
+#[重启容器]
+$0 stop
+$0 start
 fi
 
 if [ $1 = destroy ]; then
